@@ -1,6 +1,8 @@
+import json
+
 import dropbox
 from dotenv import dotenv_values
-from os import listdir, path
+from os import listdir, path, walk
 
 config = dotenv_values(".env")
 
@@ -15,8 +17,6 @@ class DropBoxClient():
         local_folders = self._get_list_local_folders()
         self._create_missing_dropbox_folders(dropbox_folders, local_folders)
         self._upload_books()
-
-
 
     def _get_list_uploaded_folders(self):
         all_objects = self._get_all_objects()
@@ -51,6 +51,35 @@ class DropBoxClient():
 
     def _upload_books(self):
         new_books = self._get_new_books_list()
+        with open('books.json', 'rb') as file:
+            books_mapping = json.load(file)
+        for book_name in new_books:
+            playlist_name = self._extract_book_details(books_mapping, book_name)
+            dest_path = self._create_dropbox_dest_path(playlist_name, book_name)
+            print(dest_path)
+        # selt
+        # .dbx_api.files_upload()
+
+    def _extract_book_details(self, mapping, book_name):
+        """
+        :param mapping: list of dicts [{
+                                        book_name: str,
+                                        book_id: str,
+                                        book_url: str,
+                                        playlist_name: str
+                                      }]
+        :param book_name: the name of book -> str
+        :return: playlist_name -> str
+        """
+        for book_details in mapping:
+            if book_details.get('book_name') == book_name:
+                playlist_name = book_details.get('playlist_name')
+        return playlist_name
+
+    def _create_dropbox_dest_path(self, playlist_name, filename):
+        base = config.get('DROPBOX_DEST_DIR')
+        dest_path = f"{base}{playlist_name}/{filename}"
+        return dest_path
 
     def _get_new_books_list(self):
         uploaded_books = self._get_uploaded_books()
@@ -60,11 +89,19 @@ class DropBoxClient():
         return new_books
 
     def _get_uploaded_books(self):
-        books = []
-
         all_objects = self._get_all_objects()
-        books = [book for book in all_objects if self._is_file(book)]
+        books = [book.name for book in all_objects if self._is_file(book)]
+        return books
+
+    def _get_local_books(self):
+        base_path = config.get('DEST_DIR')
+        local_books = []
+        for (_, _, filenames) in walk(base_path):
+            for bookname in filenames:
+                local_books.append(bookname)
+        return local_books
+
 
 if __name__ == "__main__":
     db = DropBoxClient()
-    db.upload_new_books()
+    db._upload_books()
