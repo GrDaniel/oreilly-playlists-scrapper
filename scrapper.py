@@ -20,7 +20,9 @@ class Scrapper():
 
     def __init__(self):
         chromedriver_path = os.path.dirname(os.path.abspath(__file__)) + "/chromedriver"
-        self._webdriver = webdriver.Chrome(chromedriver_path)
+        options = webdriver.chrome.options.Options()
+        options.headless = True
+        self._webdriver = webdriver.Chrome(chromedriver_path, options=options)
         self.login()
         self.playlists = {}
         self.links = {}
