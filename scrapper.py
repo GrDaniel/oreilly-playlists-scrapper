@@ -13,7 +13,7 @@ from utils import extract_book_id_from_url
 config = dotenv_values(".env")
 
 
-class Scrapper():
+class OreillyPlaylistScrapper(object):
 
     LOGIN_PAGE_URL = "https://www.oreilly.com/member/login"
     PLAYLISTS_PAGE_URL = "https://learning.oreilly.com/playlists/"
@@ -85,5 +85,5 @@ class Scrapper():
 
 
 if __name__ == '__main__':
-    scrapper = Scrapper()
+    scrapper = OreillyPlaylistScrapper()
     scrapper.get_books()
