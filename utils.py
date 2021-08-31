@@ -1,8 +1,12 @@
+import pathlib
 import re
-from dotenv import dotenv_values
 from os import walk
 
+from dotenv import dotenv_values
+
 cfg = dotenv_values(".env")
+
+PROJECT_DIR_PATH = str(pathlib.Path().resolve())
 
 
 def extract_book_id_from_url(url):
